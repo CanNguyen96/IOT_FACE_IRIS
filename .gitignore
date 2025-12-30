@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Dataset (large files)
+CASIA-Iris-Thousand/
+lfw_funneled/
+lfw_face/
+embeddings/
+legacy_iris_gabor/
+*.tgz
+*.zip
+*.tar.gz
+
+# Trained models (upload to Google Drive)
+*.pth
+*.npz
+*.h5
+*.onnx
+
+# Evaluation results (keep plots, exclude large data)
+*.png
+*.jpg
+*.jpeg
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs
+*.log
