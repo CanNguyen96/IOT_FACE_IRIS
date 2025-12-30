@@ -223,12 +223,6 @@ python mfa_realtime.py
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🙏 Acknowledgments
 
 - **Datasets**: 
@@ -241,24 +235,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Contact
 
 For questions or issues, please open an issue on GitHub or contact:
-- Email: your.email@example.com
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-
----
-
-## 🌟 Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@misc{multimodal-biometric-2025,
-  author = {Your Name},
-  title = {Multimodal Biometric Authentication: Face + Iris Recognition with ResNet18},
-  year = {2025},
-  publisher = {GitHub},
-  url = {https://github.com/YOUR_USERNAME/multimodal-biometric-auth}
-}
-```
+- Email: canhayqua012@gmail.com
+- GitHub: https://github.com/CanNguyen96
 
 ---
 
