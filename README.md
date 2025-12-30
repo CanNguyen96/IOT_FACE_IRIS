@@ -67,8 +67,7 @@ dataset/
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/multimodal-biometric-auth.git
-cd multimodal-biometric-auth
+git clone https://github.com/CanNguyen96/IOT_FACE_IRIS.git
 ```
 
 ### 2. Create Virtual Environment
