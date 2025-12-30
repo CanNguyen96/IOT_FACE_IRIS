@@ -35,7 +35,7 @@ Hệ thống xác thực sinh trắc học đa phương thức kết hợp nhậ
 ## 🗂️ Project Structure
 
 ```
-dataset/
+IOT_FACE_IRIS/
 ├── face_cnn/                      # Face Recognition Module
 │   ├── train_face_resnet18.py     # Training script
 │   ├── generate_embeddings_resnet18.py
@@ -80,9 +80,10 @@ venv\Scripts\activate  # Windows
 ### 3. Install Dependencies
 ```bash
 pip install torch torchvision torchaudio
-pip install opencv-python mediapipe
+pip install opencv-python 
 pip install scikit-learn matplotlib tqdm
 pip install numpy pandas
+pip install mediapipe==0.10.9
 ```
 
 ---
