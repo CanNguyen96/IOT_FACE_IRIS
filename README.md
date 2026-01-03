@@ -71,6 +71,7 @@ IOT_FACE_IRIS/
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/CanNguyen96/IOT_FACE_IRIS.git
+cd IOT_FACE_IRIS
 ```
 
 ### 2. Create Virtual Environment
@@ -93,25 +94,34 @@ pip install mediapipe==0.10.9
 
 ## 📥 Download Dataset & Models
 
-### **Datasets** (Required for Training)
+### **Pre-trained Models & Embeddings** (Required to Run Demo)
 
-#### 1. **CASIA-Iris-Thousand** (Iris Recognition)
+⚠️ **Để chạy demo/evaluation, bạn cần download 4 files sau:**
+
+#### Face Recognition Files
+1. **Model**: `face_lfw_funneled_best.pth` (46 MB) - [Download](https://drive.google.com/file/d/10WE5kifqT4pi0OBvrvs5DzoyFM9-TvEP/view)
+2. **Embeddings**: `face_embeddings_resnet18.npz` - [Download](https://drive.google.com/file/d/11MzSUyZc3vYJyqUf1qRa6gPTsuxSRhs-/view)
+   - **Place in**: `face_cnn/`
+
+#### Iris Recognition Files
+3. **Model**: `iris_cnn_resnet18.pth` (46 MB) - [Download](https://drive.google.com/file/d/1nlDkwfgc3EVZMrPRnFjZVZ9xvDS7QHNB/view)
+4. **Embeddings**: `iris_embeddings_resnet18.npz` (39 MB) - [Download](https://drive.google.com/file/d/1vt8IeGAxoXwqrJW8xPfySlnNTiVx0-Zw/view)
+   - **Place in**: `iris_cnn/`
+
+---
+
+### **Datasets** (Only Required for Re-training)
+
+#### 1. **LFW-Funneled** (Face Recognition)
+- **Size**: ~200 MB
+- **Download**: [Official LFW-Funneled](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz) or [Kaggle](https://www.kaggle.com/datasets/atulanandjha/lfwpeople/data)
+- **Extract to**: `lfw_funneled/`
+- **Note**: Filtered to 1,680 classes with ≥2 images per person
+
+#### 2. **CASIA-Iris-Thousand** (Iris Recognition)
 - **Size**: ~2.5 GB
 - **Download**: [Kaggle - CASIA-Iris-Thousand](https://www.kaggle.com/datasets/sondosaabed/casia-iris-thousand)
 - **Extract to**: `CASIA-Iris-Thousand/`
--Funneled (Labeled Faces in the Wild)** (Face Recognition)
-- **Size**: ~200 MB
-- **Download**: [Official LFW-Funneled](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz)
-- **Extract to**: `lfw_funneled/`
-- **Note**: Filtered to 1,680 classes with ≥2 images per personple](https://www.kaggle.com/datasets/atulanandjha/lfwpeople/data) or [Official LFW](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz)
-- **Extract to**: `lfw_funneIncluded in repository)
-
-✅ Models are already trained and included:
-- `face_cnn/face_lfw_funneled_best.pth` - Face model (epoch 15, val_acc 51.77%)
-- `iris_cnn/iris_cnn_resnet18.pth` - Iris model (1000 classes)
-- Embeddings files are also pre-generatedet18.pth` (46 MB) - [Download](https://drive.google.com/file/d/1TMtRcGJxoV-eP-MHxAzBLv61sl2Cxdfe/view?usp=sharing)
-- **Embeddings**: `iris_embeddings_resnet18.npz` (39 MB) - [Download](https://drive.google.com/file/d/1w4qAhpYn7LuMlr7fxwyIG-hjJeVXriX-/view?usp=sharing)
-- **Place in**: `iris_cnn/`
 
 ---
 
@@ -119,10 +129,15 @@ pip install mediapipe==0.10.9
 
 ### Option 1: Use Pre-trained Models (Recommended)
 
-1. Download models from Google Drive (see above)
-2. Run real-time demo:
-```bash
-cd realtime_demo
+#### Step 0: Download Required Files
+**Download 4 files** từ phần [📥 Download Dataset & Models](#-download-dataset--models):
+- 2 model files (.pth): `face_lfw_funneled_best.pth`, `iris_cnn_resnet18.pth`
+- 2 embedding files (.npz): `face_embeddings_resnet18.npz`, `iris_embeddings_resnet18.npz`
+
+Đặt vào đúng thư mục:
+- Face files → `face_cnn/`
+- Iris files → `iris_cnn/`
+
 #### Step 1: Enroll yourself
 ```bash
 python realtime_demo/enroll_yourself.py
@@ -151,6 +166,30 @@ python iris_cnn/generate_embeddings_resnet18.py
 ```
 
 #### Evaluate Fusion
+```bash
+python final_fusion_evaluation.py
+```
+
+---
+
+### Option 3: Train from Scratch
+
+**Chỉ cần làm nếu muốn train lại models**
+
+1. Download datasets (CASIA-Iris-Thousand + LFW-Funneled)
+2. Train Face CNN:
+```bash
+python face_cnn/train_lfw_funneled.py
+python face_cnn/generate_embeddings_resnet18.py
+```
+
+3. Train Iris CNN:
+```bash
+python iris_cnn/train_iris_improved.py
+python iris_cnn/generate_embeddings_resnet18.py
+```
+
+4. Evaluate Fusion:
 ```bash
 python final_fusion_evaluation.py
 ```
