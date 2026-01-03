@@ -5,12 +5,13 @@ Supports: ResNet18, MobileNet, EfficientNet backbones
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from iris_dataset import IrisDataset
 from iris_model_improved import get_iris_model
 import argparse
 from tqdm import tqdm
 import os
+import numpy as np
 
 def train_epoch(model, loader, criterion, optimizer, device):
     model.train()
@@ -82,13 +83,31 @@ def main():
     print(f"Device          : {args.device}")
     print("="*70)
     
-    # Load dataset
-    print("\n[INFO] Loading dataset...")
+    # Load dataset with train/test split
+    print("\n[INFO] Loading dataset with train/test split...")
     dataset = IrisDataset(args.dataset_path)
-    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    
+    # Load split indices
+    split_file = 'iris_train_test_split.npz'
+    if not os.path.exists(split_file):
+        print(f"[ERROR] Split file not found: {split_file}")
+        print("Please run: python ../create_train_test_split.py")
+        exit(1)
+    
+    split_data = np.load(split_file)
+    train_idx = split_data['train_idx']
+    test_idx = split_data['test_idx']
+    
+    train_set = Subset(dataset, train_idx)
+    test_set = Subset(dataset, test_idx)
+    
+    train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0)
+    test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, num_workers=0)
     
     num_classes = len(set([label for _, label in dataset.samples]))
-    print(f"[OK] Dataset loaded: {len(dataset)} samples, {num_classes} classes")
+    print(f"[OK] Train set: {len(train_set)} samples ({len(train_set)/len(dataset)*100:.1f}%)")
+    print(f"[OK] Test set:  {len(test_set)} samples ({len(test_set)/len(dataset)*100:.1f}%)")
+    print(f"[OK] Classes: {num_classes}")
     
     # Create model
     print(f"\n[INFO] Creating {args.backbone} model...")
@@ -131,11 +150,22 @@ def main():
             torch.save(model.state_dict(), args.output)
             print(f"  [OK] Best model saved: {args.output} (Acc: {acc:.2f}%)")
     
+    # Save training history
+    np.savez(args.output.replace('.pth', '_history.npz'),
+             train_loss=[h['loss'] for h in train_history],
+             train_acc=[h['acc'] for h in train_history],
+             val_loss=[h['loss'] for h in val_history],
+             val_acc=[h['acc'] for h in val_history])
+    
     print("\n" + "="*70)
-    print("TRAINING COMPLETED")
+    print("TRAINING COMPLETE")
     print("="*70)
-    print(f"Best accuracy   : {best_acc:.2f}%")
-    print(f"Model saved     : {args.output}")
+    print(f"Best Val Accuracy: {best_val_acc:.2f}%")
+    print(f"Final Train Acc:   {train_acc:.2f}%")
+    print(f"Final Val Acc:     {val_acc:.2f}%")
+    print(f"Model saved:       {args.output}")
+    print(f"History saved:     {args.output.replace('.pth', '_history.npz')}")
+    print("\n⚠️  IMPORTANT: Use TEST set for final evaluation!")
     print("="*70)
     
     # Save metadata

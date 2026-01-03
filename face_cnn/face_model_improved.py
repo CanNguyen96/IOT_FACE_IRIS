@@ -1,14 +1,58 @@
 """
-Improved Face CNN with ResNet backbone
-(Though InsightFace is already production-ready, this provides alternative)
+Improved Face CNN with ResNet backbone for ArcFace training
 """
 import torch
 import torch.nn as nn
 import torchvision.models as models
 
+class FaceRecognitionModel(nn.Module):
+    """
+    Face Recognition Model with ResNet18 backbone
+    Using Softmax Loss (same as Iris CNN)
+    """
+    def __init__(self, num_classes, embedding_size=512, pretrained=True, dropout=0.5):
+        super().__init__()
+        
+        # Load pretrained ResNet18
+        resnet = models.resnet18(pretrained=pretrained)
+        
+        # Extract feature layers (remove final FC)
+        self.backbone = nn.Sequential(*list(resnet.children())[:-1])
+        
+        # Add dropout for regularization
+        self.dropout = nn.Dropout(p=dropout)
+        
+        # Embedding layer
+        self.embedding = nn.Linear(512, embedding_size)
+        self.bn_emb = nn.BatchNorm1d(embedding_size)
+        
+        # Classifier layer (for softmax)
+        self.classifier = nn.Linear(embedding_size, num_classes)
+    
+    def forward(self, x, return_embedding=False):
+        """
+        Forward pass
+        Returns: logits for training, or embeddings for inference
+        """
+        x = self.backbone(x)
+        x = torch.flatten(x, 1)
+        x = self.dropout(x)
+        
+        # Embedding
+        emb = self.embedding(x)
+        emb = self.bn_emb(emb)
+        
+        if return_embedding:
+            return emb
+        
+        # Classification
+        return self.classifier(emb)
+
+
 class FaceCNN_ResNet(nn.Module):
     """
-    FaceCNN with ResNet18 backbone for face recognition
+    Legacy FaceCNN with ResNet18 backbone (with classifier)
+    Use FaceRecognitionModel for ArcFace training
     """
     def __init__(self, num_classes, embedding_dim=512, pretrained=True):
         super().__init__()

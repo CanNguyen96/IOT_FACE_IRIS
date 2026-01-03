@@ -10,17 +10,18 @@ CASIA-Iris-Thousand/          # 2.5 GB - Iris dataset
 lfw_funneled/                 # 200 MB - Face dataset
 ```
 
-#### **Trained Models** (~170 MB)
+#### **Trained Models** (~150 MB)
 ```
 face_cnn/
-├── face_cnn_resnet18.pth              # 55 MB
-├── face_cnn_resnet18_metadata.pth     # 1 KB
+├── face_lfw_funneled_best.pth         # 55 MB (epoch 15, val_acc 51.77%)
 └── face_embeddings_resnet18.npz       # 27 MB
 
 iris_cnn/
 ├── iris_cnn_resnet18.pth              # 46 MB
-├── iris_cnn_resnet18_metadata.pth     # 1 KB
 └── iris_embeddings_resnet18.npz       # 39 MB
+
+realtime_demo/
+└── enrolled_user.npz                  # <1 MB (user embeddings)
 ```
 
 #### **Evaluation Results** (Optional - ~5 MB)
@@ -41,20 +42,15 @@ Multimodal-Biometric-Models/
 │   └── lfw-funneled.tgz               # Original archive
 │
 ├── face_models/
-│   ├── face_cnn_resnet18.pth
-│   ├── face_cnn_resnet18_metadata.pth
+│   ├── face_lfw_funneled_best.pth
 │   └── face_embeddings_resnet18.npz
 │
 ├── iris_models/
 │   ├── iris_cnn_resnet18.pth
-│   ├── iris_cnn_resnet18_metadata.pth
 │   └── iris_embeddings_resnet18.npz
 │
 └── evaluation_results/
-    ├── final_fusion_resnet18_resnet18.png
-    ├── face_comparison_resnet18_vs_insightface.png
-    ├── iris_evaluation_resnet18.png
-    └── fusion_evaluation_resnet18.png
+    └── final_fusion_resnet18_resnet18.png
 ```
 
 ### Share Settings
@@ -80,7 +76,7 @@ git config user.email "your.email@example.com"
 ### 3. Create GitHub Repository
 1. Go to https://github.com/new
 2. Repository name: `multimodal-biometric-auth`
-3. Description: "Face + Iris Recognition with ResNet18 - 100% Accuracy"
+3. Description: "Face + Iris Recognition with ResNet18 - 99.95% Fusion Accuracy"
 4. Public/Private: Choose as needed
 5. **Do NOT** initialize with README (we already have one)
 
@@ -102,10 +98,10 @@ git status
 ```bash
 git commit -m "Initial commit: Multimodal biometric system with ResNet18
 
-- Face Recognition: ResNet18, AUC=1.0, EER=0.0%
-- Iris Recognition: ResNet18, AUC=1.0, EER=0.03%
-- Multimodal Fusion: AUC=1.0, EER=0.0%
-- Real-time demo with MediaPipe iris segmentation
+- Face Recognition: ResNet18 on LFW Funneled (val_acc 51.77%)
+- Iris Recognition: ResNet18 on CASIA-Iris-Thousand (~85-90% acc)
+- Multimodal Fusion: 99.95% accuracy (FAR 0.03%, EER 0.10%)
+- Real-time MFA demo with webcam
 - Complete training and evaluation scripts"
 ```
 
@@ -132,10 +128,11 @@ After uploading to Google Drive:
 - CASIA-Iris-Thousand: [Download (2.5 GB)](https://drive.google.com/file/d/ACTUAL_FILE_ID)
 - LFW Funneled: [Download (200 MB)](https://drive.google.com/file/d/ACTUAL_FILE_ID)
 
-#### Pre-trained Models
-- Face Models: [Download (83 MB)](https://drive.google.com/drive/folders/ACTUAL_FOLDER_ID)
-- Iris Models: [Download (87 MB)](https://drive.google.com/drive/folders/ACTUAL_FOLDER_ID)
-- All-in-One Package: [Download (170 MB)](https://drive.google.com/drive/folders/ACTUAL_FOLDER_ID)
+#### Pre-trained Models (Included in Repository)
+✅ Models already included - no separate download needed:
+- `face_cnn/face_lfw_funneled_best.pth` (55 MB)
+- `iris_cnn/iris_cnn_resnet18.pth` (46 MB)
+- Embeddings files also included
 ```
 
 3. **Commit the updated README**:
@@ -166,22 +163,26 @@ IMPROVEMENT_REPORT.md
 DEPLOYMENT_GUIDE.md
 ```
 
-✅ **Small Data** (optional)
+✅ **Documentation**
 ```
-pairs.txt                     # LFW evaluation pairs
-pairsDevTest.txt
-pairsDevTrain.txt
+README.md
+DEPLOYMENT_GUIDE.md
+requirements.txt
+.gitignore
 ```
 
 ❌ **Excluded** (in .gitignore)
 ```
-*.pth                         # Models → Google Drive
-*.npz                         # Embeddings → Google Drive
-CASIA-Iris-Thousand/          # Dataset → Google Drive
-lfw_funneled/                 # Dataset → Google Drive
+CASIA-Iris-Thousand/          # Dataset → Too large for GitHub
+lfw_funneled/                 # Dataset → Too large for GitHub
+lfw-funneled.tgz              # Dataset archive
+lfw_face/                     # Old dataset folder
 venv/                         # Virtual environment
 __pycache__/                  # Python cache
+*.pyc                         # Compiled Python
 ```
+
+⚠️ **Note**: Models (*.pth, *.npz) ARE included in repository for easy setup
 
 ---
 
@@ -203,30 +204,27 @@ git push
 
 ## 📊 Repository Statistics
 
-**Expected GitHub repo size**: ~5-10 MB (code only)
-**Google Drive storage**: ~2.9 GB (datasets + models)
+**Expected GitHub repo size**: ~150-200 MB (code + models)
+**Google Drive storage**: ~2.7 GB (datasets only - optional)
 
-**Clone time**: ~1 minute (code only)
-**Full setup time**: ~30 minutes (including downloads)
+**Clone time**: ~5-10 minutes (includes models)
+**Full setup time**: ~10 minutes (no dataset download needed for demo)
 
 ---
 
 ## ✅ Deployment Checklist
 
-- [ ] Create .gitignore file
-- [ ] Create comprehensive README.md
-- [ ] Create requirements.txt
-- [ ] Upload datasets to Google Drive
-- [ ] Upload models to Google Drive
-- [ ] Upload evaluation results to Google Drive
-- [ ] Set Google Drive permissions to "Anyone with link"
-- [ ] Copy Google Drive share links
-- [ ] Update README.md with actual download links
+- [x] Create .gitignore file
+- [x] Create comprehensive README.md
+- [x] Create requirements.txt
+- [x] Train and save models
+- [x] Clean up unnecessary files
+- [ ] (Optional) Upload datasets to Google Drive for others
 - [ ] Initialize Git repository
-- [ ] Create GitHub repository
-- [ ] Push code to GitHub
+- [ ] Create GitHub repository  
+- [ ] Push code + models to GitHub
 - [ ] Test clone + setup on clean machine
-- [ ] Add GitHub topics: `biometric`, `face-recognition`, `iris-recognition`, `pytorch`, `resnet18`
+- [ ] Add GitHub topics: `biometric`, `face-recognition`, `iris-recognition`, `pytorch`, `resnet18`, `multimodal-authentication`
 
 ---
 
