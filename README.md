@@ -5,15 +5,15 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Hệ thống xác thực sinh trắc học đa phương thức kết hợp nhận dạng khuôn mặt và mống mắt, đạt **100% accuracy** trên cả hai modality.
+Hệ thống xác thực sinh trắc học đa phương thức kết hợp nhận dạng khuôn mặt và mống mắt, đạt **99.95% fusion accuracy**.
 
 ---
 
 ## 🎯 Highlights
 
-- ✅ **Face Recognition**: ResNet18 custom-trained, AUC=1.0000, EER=0.00%
-- ✅ **Iris Recognition**: ResNet18 custom-trained, AUC=1.0000, EER=0.03%
-- ✅ **Multimodal Fusion**: Score-level fusion, AUC=1.0000, EER=0.00%
+- ✅ **Face Recognition**: ResNet18 trained on LFW Funneled, Val Acc 51.77%
+- ✅ **Iris Recognition**: ResNet18 trained on CASIA-Iris-Thousand, ~85-90% accuracy
+- ✅ **Multimodal Fusion**: 0.3×Face + 0.7×Iris, AUC=1.0000, EER=0.10%, **Accuracy 99.95%**
 - ✅ **Real-time Demo**: Live authentication với camera
 - ✅ **Production Ready**: Fully trained models sẵn sàng deploy
 
@@ -21,42 +21,45 @@ Hệ thống xác thực sinh trắc học đa phương thức kết hợp nhậ
 
 ## 📊 Performance
 
-| Model | Dataset | Classes | Samples | AUC | EER | Accuracy |
-|-------|---------|---------|---------|-----|-----|----------|
-| **Face ResNet18** | LFW | 5,749 | 13,233 | 1.0000 | 0.00% | 100% |
-| **Iris ResNet18** | CASIA | 1,000 | 20,000 | 1.0000 | 0.03% | 100% |
-| **Fusion (0.3F + 0.7I)** | Both | 1,000 | 6,000 pairs | 1.0000 | 0.00% | 100% |
+| Model | Dataset | Training Acc | Val Acc | AUC | EER |
+|-------|---------|--------------|---------|-----|-----|
+| **Face ResNet18** | LFW Funneled (1,680 classes) | 99.99% | 51.77% | - | - |
+| **Iris ResNet18** | CASIA-Iris-Thousand (1,000 classes) | 100% | ~85-90% | - | - |
+| **Fusion (0.3F + 0.7I)** | Face + Iris | - | - | 1.0000 | 0.10% |
 
-**Comparison với InsightFace pretrained:**
-- Face ResNet18: **+46.4% AUC**, **-100% EER** (tốt hơn rất nhiều!)
+**Fusion Performance:**
+- **Accuracy**: 99.95%
+- **FAR**: 0.03%
+- **FRR**: 0.07%
 
 ---
 
 ## 🗂️ Project Structure
-
-```
 IOT_FACE_IRIS/
 ├── face_cnn/                      # Face Recognition Module
-│   ├── train_face_resnet18.py     # Training script
+│   ├── train_lfw_funneled.py      # Training script
 │   ├── generate_embeddings_resnet18.py
-│   ├── evaluate_face_resnet18.py
 │   ├── face_model_improved.py     # ResNet18 architecture
-│   ├── face_utils.py              # Utilities
-│   └── face_dataset.py            # LFW dataset loader
+│   ├── face_lfw_funneled_best.pth # Best model (epoch 15)
+│   └── face_embeddings_resnet18.npz
 │
 ├── iris_cnn/                      # Iris Recognition Module
 │   ├── train_iris_improved.py     # Training script
 │   ├── generate_embeddings_resnet18.py
-│   ├── evaluate_resnet18.py
-│   ├── fusion_evaluate_resnet18.py
-│   └── iris_model_improved.py     # ResNet18 architecture
+│   ├── iris_model_improved.py     # ResNet18 architecture
+│   ├── iris_dataset.py            # Dataset loader
+│   ├── iris_cnn_resnet18.pth      # Best model
+│   └── iris_embeddings_resnet18.npz
 │
 ├── realtime_demo/                 # Real-time Authentication
-│   ├── quick_demo.py              # Interactive demo
-│   ├── mfa_realtime.py            # Continuous authentication
-│   ├── prepare_enrollment.py      # User enrollment
-│   └── iris_segmentation.py       # MediaPipe iris detection
+│   ├── simple_mfa_demo.py         # MFA demo (face + iris)
+│   ├── enroll_yourself.py         # User enrollment
+│   └── enrolled_user.npz          # Enrolled user data
 │
+├── final_fusion_evaluation.py     # Complete system evaluation
+├── final_fusion_resnet18_resnet18.png # Fusion ROC curve
+├── README.md                      # This file
+└── DEPLOYMENT_GUIDE.md            # Deployment instructions
 ├── final_fusion_evaluation.py     # Complete system evaluation
 └── IMPROVEMENT_REPORT.md          # Detailed performance report
 ```
@@ -96,21 +99,17 @@ pip install mediapipe==0.10.9
 - **Size**: ~2.5 GB
 - **Download**: [Kaggle - CASIA-Iris-Thousand](https://www.kaggle.com/datasets/sondosaabed/casia-iris-thousand)
 - **Extract to**: `CASIA-Iris-Thousand/`
-
-#### 2. **LFW (Labeled Faces in the Wild)** (Face Recognition)
+-Funneled (Labeled Faces in the Wild)** (Face Recognition)
 - **Size**: ~200 MB
-- **Download**: [Kaggle - LFW People](https://www.kaggle.com/datasets/atulanandjha/lfwpeople/data) or [Official LFW](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz)
+- **Download**: [Official LFW-Funneled](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz)
 - **Extract to**: `lfw_funneled/`
+- **Note**: Filtered to 1,680 classes with ≥2 images per personple](https://www.kaggle.com/datasets/atulanandjha/lfwpeople/data) or [Official LFW](http://vis-www.cs.umass.edu/lfw/lfw-funneled.tgz)
+- **Extract to**: `lfw_funneIncluded in repository)
 
-### **Pre-trained Models** (Optional - Skip Training)
-
-#### Face ResNet18
-- **Model**: `face_cnn_resnet18.pth` (55 MB) - [Download](https://drive.google.com/file/d/117uxjdg2-bax0Q1nsXhFHFFHR_udDuvS/view?usp=sharing)
-- **Embeddings**: `face_embeddings_resnet18.npz` (27 MB) - [Download](https://drive.google.com/file/d/18Bd616tpcUVNXkKiQ2ShVeQG3wcEhjQV/view?usp=sharing)
-- **Place in**: `face_cnn/`
-
-#### Iris ResNet18
-- **Model**: `iris_cnn_resnet18.pth` (46 MB) - [Download](https://drive.google.com/file/d/1TMtRcGJxoV-eP-MHxAzBLv61sl2Cxdfe/view?usp=sharing)
+✅ Models are already trained and included:
+- `face_cnn/face_lfw_funneled_best.pth` - Face model (epoch 15, val_acc 51.77%)
+- `iris_cnn/iris_cnn_resnet18.pth` - Iris model (1000 classes)
+- Embeddings files are also pre-generatedet18.pth` (46 MB) - [Download](https://drive.google.com/file/d/1TMtRcGJxoV-eP-MHxAzBLv61sl2Cxdfe/view?usp=sharing)
 - **Embeddings**: `iris_embeddings_resnet18.npz` (39 MB) - [Download](https://drive.google.com/file/d/1w4qAhpYn7LuMlr7fxwyIG-hjJeVXriX-/view?usp=sharing)
 - **Place in**: `iris_cnn/`
 
@@ -124,36 +123,35 @@ pip install mediapipe==0.10.9
 2. Run real-time demo:
 ```bash
 cd realtime_demo
-python quick_demo.py
+#### Step 1: Enroll yourself
+```bash
+python realtime_demo/enroll_yourself.py
 ```
+- Press **SPACE** to capture your face
+- Press **SPACE** to capture your iris
+- Creates `enrolled_user.npz` with your embeddings
 
-**Demo Instructions:**
-- Press **SPACE** to enroll your face + iris
-- Press **SPACE** again to authenticate
-- Press **ESC** to exit
-
-### Option 2: Train From Scratch
-
+#### Step 2: Run MFA demo
+```bash
+python realtime_demo/simple_mfa_demo.py
+```
+- Press **F** to verify face
+- Press **I** to verify iris
+- When both verified → **ACCESS GRANTED**
 #### Train Face Recognition
 ```bash
-cd face_cnn
-python train_face_resnet18.py --epochs 30 --batch_size 32 --lr 0.0001
-python generate_embeddings_resnet18.py
-python evaluate_face_resnet18.py
+python face_cnn/train_lfw_funneled.py
+python face_cnn/generate_embeddings_resnet18.py
 ```
 
 #### Train Iris Recognition
 ```bash
-cd iris_cnn
-python train_iris_improved.py --epochs 30 --batch_size 64 --lr 0.001
-python generate_embeddings_resnet18.py
-python evaluate_resnet18.py
+python iris_cnn/train_iris_improved.py
+python iris_cnn/generate_embeddings_resnet18.py
 ```
 
 #### Evaluate Fusion
 ```bash
-python fusion_evaluate_resnet18.py
-cd ..
 python final_fusion_evaluation.py
 ```
 
@@ -167,61 +165,44 @@ cd realtime_demo
 python quick_demo.py
 ```
 
-### MFA Real-time (Continuous Verification)
+### Step 1: Enroll yourself
 ```bash
-# Step 1: Enroll user
-python prepare_enrollment.py
-
-# Step 2: Run authentication
-python mfa_realtime.py
+python realtime_demo/enroll_yourself.py
 ```
 
----
+### Step 2: Run MFA authentication
+```bash
+python realtime_demo/simple_mfa_demo.py
+```
 
-## 📈 Evaluation Results
+**Controls:**
+- **F** - Verify face
+- **I** - Verify iris  
+- **ESC** - Exit Face Recognition (ResNet18 vs InsightFace)
+| Metric | Face ResN
+- **Model**: ResNet18 (512-dim embeddings, Softmax loss)
+- **Dataset**: LFW Funneled - 1,680 classes, 9,164 training images
+- **Training Accuracy**: 99.99%
+- **Validation Accuracy**: 51.77% (epoch 15)
+- **Note**: Low validation accuracy due to small dataset (avg 5.5 images/person)
 
-### Face Recognition (ResNet18 vs InsightFace)
-| Metric | Face ResNet18 | InsightFace | Improvement |
-|--------|---------------|-------------|-------------|
-| AUC | **1.0000** | 0.6832 | +46.4% |
-| EER | **0.00%** | 37.30% | -100% |
+### Iris Recognition
+- **Model**: ResNet18 (512-dim embeddings)
+- **Dataset**: CASIA-Iris-Thousand - 1,000 classes, 20,000 images
+- **Training Accuracy**: 100%
+- **Validation Accuracy**: ~85-90%
 
-### Iris Recognition (ResNet18 vs Simple CNN)
-| Metric | Iris ResNet18 | Simple CNN | Improvement |
-|--------|---------------|------------|-------------|
-| AUC | **1.0000** | 0.8500 | +17.6% |
-| EER | **0.03%** | 19.10% | -99.8% |
-
-### Final Multimodal Fusion
-- **Fusion Strategy**: 0.3 × Face + 0.7 × Iris
+### Multimodal Fusion (Face + Iris)
+- **Fusion Strategy**: 0.3 × Face + 0.7 × Iris (score-level)
+- **Genuine pairs**: 3,000
+- **Impostor pairs**: 3,000
 - **AUC**: 1.0000 (Perfect!)
-- **EER**: 0.00%
-- **Accuracy**: 100%
+- **EER**: 0.10%
+- **Accuracy**: 99.95%
+- **FAR**: 0.03%
+- **FRR**: 0.07%
 
----
-
-## 🛠️ Technical Details
-
-### Architecture
-- **Backbone**: ResNet18 (pretrained on ImageNet)
-- **Face Embedding**: 512-D L2-normalized vectors
-- **Iris Embedding**: 512-D L2-normalized vectors
-- **Similarity Metric**: Cosine Similarity
-- **Fusion Method**: Score-level weighted sum
-
-### Training
-- **Optimizer**: Adam
-- **Learning Rate**: 0.0001 (Face), 0.001 (Iris)
-- **Scheduler**: StepLR (gamma=0.5, step=10)
-- **Epochs**: 30
-- **Device**: CPU/CUDA
-
-### Iris Segmentation
-- **Method**: MediaPipe Face Mesh
-- **Landmarks**: 468-477 (iris contour)
-- **Size**: 512×64 grayscale
-- **Normalization**: MinMax scaling
-
+**Key Insight**: Despite face CNN having only 51% validation accuracy, fusion with iris achieves 99.95% accuracy!
 ---
 
 ## 🙏 Acknowledgments
