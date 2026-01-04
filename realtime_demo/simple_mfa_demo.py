@@ -1,6 +1,7 @@
 """
 Simple MFA Real-time Demo
 Face + Iris Multi-Factor Authentication
+Using FUSION-BASED DECISION: Only fused score determines authentication
 """
 import cv2
 import numpy as np
@@ -19,10 +20,10 @@ from face_model_improved import FaceRecognitionModel
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Device: {DEVICE}")
 
-# Optimized thresholds from fusion evaluation
-FACE_THRESHOLD = 0.5
-IRIS_THRESHOLD = 0.38
-FUSION_THRESHOLD = 0.33  # From 99.95% accuracy fusion
+# Fusion parameters from evaluation (99.95% accuracy)
+FUSION_THRESHOLD = 0.33  # Final decision threshold
+FUSION_WEIGHT_FACE = 0.3
+FUSION_WEIGHT_IRIS = 0.7
 
 # Check if enrolled data exists
 enrolled_path = os.path.join(os.path.dirname(__file__), "enrolled_user.npz")
@@ -95,12 +96,13 @@ def preprocess_iris(img_crop):
     return tensor.to(DEVICE)
 
 print("\n" + "="*60)
-print("MFA REAL-TIME DEMO")
+print("MFA REAL-TIME DEMO - FUSION-BASED DECISION")
 print("="*60)
 print("Controls:")
 print("  F - Capture FACE for verification")
 print("  I - Capture IRIS for verification")
 print("  ESC - Exit")
+print(f"Fusion: {FUSION_WEIGHT_FACE}*Face + {FUSION_WEIGHT_IRIS}*Iris > {FUSION_THRESHOLD}")
 print("="*60 + "\n")
 
 cap = cv2.VideoCapture(0)
@@ -110,10 +112,11 @@ if not cap.isOpened():
 
 print("🎥 Camera ON - Press F for face, I for iris verification")
 
-face_verified = False
-iris_verified = False
-face_score = 0.0
-iris_score = 0.0
+# Track if scores are captured (not verified individually)
+face_captured = False
+iris_captured = False
+face_score = None
+iris_score = None
 
 while True:
     ret, frame = cap.read()
@@ -132,37 +135,44 @@ while True:
 
     # Display status
     y_offset = 30
-    cv2.putText(display, "MULTI-FACTOR AUTHENTICATION", (10, y_offset),
+    cv2.putText(display, "FUSION-BASED AUTHENTICATION", (10, y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     y_offset += 40
     
     # Face status
-    face_color = (0, 255, 0) if face_verified else (0, 0, 255)
-    face_text = f"Face: {'VERIFIED' if face_verified else 'NOT VERIFIED'} ({face_score:.2f})"
+    face_color = (0, 255, 0) if face_captured else (128, 128, 128)
+    face_text = f"Face: {'CAPTURED' if face_captured else 'NOT CAPTURED'}"
+    if face_score is not None:
+        face_text += f" (score: {face_score:.3f})"
     cv2.putText(display, face_text, (10, y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, face_color, 2)
     y_offset += 30
     
     # Iris status
-    iris_color = (0, 255, 0) if iris_verified else (0, 0, 255)
-    iris_text = f"Iris: {'VERIFIED' if iris_verified else 'NOT VERIFIED'} ({iris_score:.2f})"
+    iris_color = (0, 255, 0) if iris_captured else (128, 128, 128)
+    iris_text = f"Iris: {'CAPTURED' if iris_captured else 'NOT CAPTURED'}"
+    if iris_score is not None:
+        iris_text += f" (score: {iris_score:.3f})"
     cv2.putText(display, iris_text, (10, y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, iris_color, 2)
     y_offset += 30
     
-    # Fusion result
-    if face_verified and iris_verified:
-        fused_score = 0.3 * face_score + 0.7 * iris_score
+    # Fusion result - ONLY check when both scores are available
+    if face_score is not None and iris_score is not None:
+        fused_score = FUSION_WEIGHT_FACE * face_score + FUSION_WEIGHT_IRIS * iris_score
+        y_offset += 10
+        cv2.putText(display, f"Fused Score: {fused_score:.4f} (threshold: {FUSION_THRESHOLD})", 
+                    (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+        y_offset += 40
+        
         if fused_score > FUSION_THRESHOLD:
             cv2.putText(display, "ACCESS GRANTED", (10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 3)
-            cv2.putText(display, f"Fusion Score: {fused_score:.2f}", (10, y_offset + 40),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+            cv2.rectangle(display, (5, 5), (display.shape[1]-5, display.shape[0]-5), (0, 255, 0), 5)
         else:
             cv2.putText(display, "ACCESS DENIED", (10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
-            cv2.putText(display, f"Fusion Score: {fused_score:.2f}", (10, y_offset + 40),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
+            cv2.rectangle(display, (5, 5), (display.shape[1]-5, display.shape[0]-5), (0, 0, 255), 5)
 
     cv2.imshow("MFA Demo - Press F (face) or I (iris)", display)
     
@@ -193,12 +203,13 @@ while True:
                     face_ref.reshape(1, -1)
                 )[0][0]
                 
-                face_verified = face_score > FACE_THRESHOLD
-                print(f"Face score: {face_score:.4f} - {'✓ VERIFIED' if face_verified else '✗ FAILED'}")
+                face_captured = True
+                print(f"Face captured! Score: {face_score:.4f}")
                 
             except Exception as e:
-                print(f"Face verification error: {e}")
-                face_verified = False
+                print(f"Face capture error: {e}")
+                face_captured = False
+                face_score = None
         else:
             print("No face detected!")
     
@@ -236,12 +247,13 @@ while True:
                         iris_ref.reshape(1, -1)
                     )[0][0]
                     
-                    iris_verified = iris_score > IRIS_THRESHOLD
-                    print(f"Iris score: {iris_score:.4f} - {'✓ VERIFIED' if iris_verified else '✗ FAILED'}")
+                    iris_captured = True
+                    print(f"Iris captured! Score: {iris_score:.4f}")
                     
                 except Exception as e:
-                    print(f"Iris verification error: {e}")
-                    iris_verified = False
+                    print(f"Iris capture error: {e}")
+                    iris_captured = False
+                    iris_score = None
             else:
                 print("Cannot extract iris region!")
         else:
