@@ -13,7 +13,7 @@ import sys
 
 # Add path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from face_model_improved import FaceCNN_ResNet
+from face_utils import FaceCNN_ResNet
 
 def train_epoch(model, loader, criterion, optimizer, device):
     model.train()

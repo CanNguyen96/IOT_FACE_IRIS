@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader
 from face_dataset import FaceDataset
-from face_model_improved import FaceCNN_ResNet
+from face_utils import FaceCNN_ResNet
 from tqdm import tqdm
 
 print("="*70)
